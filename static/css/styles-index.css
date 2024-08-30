@@ -101,3 +101,20 @@ button:hover {
 .container {
       padding: 20px;
 }
+
+.chip {
+    display: inline-block;
+    padding: 8px;
+    margin: 5px;
+    border-radius: 16px;
+    background-color: #e0e0e0;
+    font-size: 14px;
+    color: #333;
+}
+
+.chip .closebtn {
+    margin-left: 10px;
+    color: #888;
+    cursor: pointer;
+    font-weight: bold;
+}
