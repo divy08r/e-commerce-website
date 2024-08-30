@@ -22,7 +22,6 @@ load_dotenv()
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 
-# Initialize PyMongo, Bcrypt, and Flask-Login
 mongo = PyMongo(app)
 if mongo.cx:
     print("MongoDB connection successful")
@@ -57,7 +56,7 @@ class RegisterForm(FlaskForm):
     submit = SubmitField("Register")
 
     def validate_username(self, username):
-        if username.data:  # Check if username data exists
+        if username.data:
             user = mongo.db.users.find_one({"username": username.data})
             if user:
                 raise ValidationError("Username already exists.")
@@ -118,61 +117,20 @@ def index():
         city = request.form['city']
         start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d')
         end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
-        art = 'art' in request.form
-        museums = 'museums' in request.form
-        outdoor = 'outdoor' in request.form
-        indoor = 'indoor' in request.form
-        kids_friendly = 'kids_friendly' in request.form
-        young_people = 'young_people' in request.form
-        preferences = request.form.get('preferences', '')
+        preferences = request.form.get('hidden_preferences', '')
         
         days = (end_date - start_date).days
 
-        # Generate itinerary
-    #     prompt = f"You are a travel expert. Give me an itinerary for {city}, for {days} days, assume each day starting at 10am and ending at 8pm having a buffer of 30 minutes between each activity. I like to"
-    #     if art:
-    #         prompt += " explore art,"
-    #     if museums:
-    #         prompt += " visit museums,"
-    #     if outdoor:
-    #         prompt += " engage in outdoor activities,"
-    #     if indoor:
-    #         prompt += " explore indoor activities,"
-    #     if kids_friendly:
-    #         prompt += " find places suitable for kids,"
-    #     if young_people:
-    #         prompt += " discover places suitable for young people,"
-    #     prompt += """Limit the length of output JSON string to 1200 characters. Generate a structured JSON representation for the travel itinerary.
-    #        {
-    #   "days": [
-    #     {
-    #       "day": 1,
-    #       "activities": [
-    #         {
-    #           "title": "Activity 1",
-    #           "description": "Description of Activity 1",
-    #           "link": "https://example.com/activity1",
-    #           "start_time": "10:00 AM",
-    #           "end_time": "12:00 PM",
-    #           "location": "https://maps.google.com/?q=location1"
-    #         },
-    #         ...
-    #       ]
-    #     }
-    #   ]
-    # }
-    #         Ensure that each day has a 'day' field and a list of 'activities' with 'title', 'description', 'start_time', 'end_time', and 'location' fields. Keep descriptions concise.
-    # """
-        # Assuming 'preferences' is a list of strings where each string is a user preference
-        prompt = f"You are a travel expert. Give me an itinerary for {city}, for {days} days, assume each day starting at 10am and ending at 8pm having a buffer of 30 minutes between each activity. I like to"
+        preferences_list = [pref.strip() for pref in preferences.split(',') if pref.strip()]
 
-        preferences_list = [pref.strip().lower() for pref in preferences.split(',') if pref.strip()]
+        prompt = f"You are a travel expert. Give me an itinerary for {city}, for {days} days, assuming each day starts at 10am and ends at 8pm with a buffer of 30 minutes between activities. I like to "
 
-        for preference in preferences:
-            prompt += f" {preference.lower()},"
+        if preferences_list:
+            prompt += ", ".join(preferences_list) + "."
+        else:
+            prompt += " provide a general itinerary."
 
-        # Remove the trailing comma and add the JSON structure requirement
-        prompt = prompt.rstrip(',') + """ Limit the length of output JSON string to 1200 characters. Generate a structured JSON representation for the travel itinerary.
+        prompt += """ Generate a structured JSON representation for the travel itinerary.
         {
         "days": [
             {
@@ -185,15 +143,15 @@ def index():
                 "start_time": "10:00 AM",
                 "end_time": "12:00 PM",
                 "location": "https://maps.google.com/?q=location1"
-                },
-                ...
+                }
             ]
             }
         ]
         }
         Ensure that each day has a 'day' field and a list of 'activities' with 'title', 'description', 'start_time', 'end_time', and 'location' fields. Keep descriptions concise.
-        """
-
+        """        
+    
+        
 
         # Call the Generative AI API
         try:
@@ -201,13 +159,14 @@ def index():
                 model=model,
                 prompt=prompt,
                 temperature=0,
-                max_output_tokens=3000,
+                max_output_tokens=6000,
             )
 
             itinerary = completion.result.strip()
-            print("Raw JSON Output:", itinerary)  # Inspect raw output
+            # print("Raw JSON Output:", itinerary) 
 
-            # Extract the JSON part from the AI response
+            print(prompt)
+            print("Preferences", preferences)
             itinerary_json_str = itinerary[7:-3].strip()
             itinerary_json = json.loads(itinerary_json_str)
         except Exception as e:
