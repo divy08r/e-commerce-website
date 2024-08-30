@@ -1,5 +1,4 @@
 flask
-flask_pymongo
 flask_wtf
 pymongo
 wtforms
