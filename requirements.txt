@@ -9,6 +9,5 @@ bson
 google-generativeai
 js
 ics
-io
 os
 dotenv
