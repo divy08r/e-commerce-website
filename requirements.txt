@@ -7,7 +7,5 @@ flask_bcrypt
 flask_login
 bson
 google-generativeai
-js
 ics
-os
 dotenv
