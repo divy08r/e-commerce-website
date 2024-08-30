@@ -1,10 +1,11 @@
-flask
-flask_wtf
+Flask
+Flask-PyMongo
+Flask-WTF
 pymongo
-wtforms
-flask_bcrypt
-flask_login
+WTForms
+Flask-Bcrypt
+Flask-Login
 bson
 google-generativeai
 ics
-dotenv
+python-dotenv
