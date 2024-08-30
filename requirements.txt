@@ -5,7 +5,6 @@ pymongo
 WTForms
 Flask-Bcrypt
 Flask-Login
-bson
 google-generativeai
 ics
 python-dotenv
