@@ -1,0 +1,14 @@
+flask
+flask_pymongo
+flask_wtf
+pymongo
+wtforms
+flask_bcrypt
+flask_login
+bson
+google-generativeai
+js
+ics
+io
+os
+dotenv

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Itinerary Generator</title>
+    <link rel="stylesheet" href="/static/css/styles-index.css">
+    <style>
+        /* Basic styles for the chips */
+        .chip {
+            display: inline-block;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 16px;
+            background-color: #e0e0e0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .chip .closebtn {
+            margin-left: 10px;
+            color: #888;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">Travel Itinerary Generator</div>
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit" class="logout-button">
+                Logout
+            </button>
+        </form>
+    </header>
+    <div class="container">
+        <h1>Plan Your Perfect Trip</h1>
+        <form method="POST" action="/">
+            <label for="city">Enter the city you're visiting:</label>
+            <input type="text" id="city" name="city" required><br><br>
+
+            <label for="start_date">Select the start date for your trip:</label>
+            <input type="date" id="start_date" name="start_date" required><br><br>
+
+            <!-- <label for="end_date">Select the end date for your trip:</label>
+            <input type="date" id="end_date" name="end_date" required><br><br>
+
+            <input type="checkbox" id="art" name="art">
+            <label for="art">Art</label><br>
+
+            <input type="checkbox" id="museums" name="museums">
+            <label for="museums">Museums</label><br>
+
+            <input type="checkbox" id="outdoor" name="outdoor">
+            <label for="outdoor">Outdoor Activities</label><br>
+
+            <input type="checkbox" id="indoor" name="indoor">
+            <label for="indoor">Indoor Activities</label><br>
+
+            <input type="checkbox" id="kids_friendly" name="kids_friendly">
+            <label for="kids_friendly">Good for Kids</label><br>
+
+            <input type="checkbox" id="young_people" name="young_people">
+            <label for="young_people">Good for Young People</label><br><br> -->
+
+            <label for="preferenceInput">Enter your preferences:</label>
+            <input type="text" id="preferenceInput" placeholder="Type and press Enter">
+            <div id="chipsContainer"></div>
+
+            <button type="submit">Generate Itinerary</button>
+        </form>
+    </div>
+</body>
+<script>
+    document.getElementById('preferenceInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addChip(this.value);
+            this.value = '';  
+        }
+    });
+
+    function addChip(preference) {
+        if (preference.trim() === '') return;
+
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.textContent = preference;
+
+        const closeBtn = document.createElement('span');
+        closeBtn.className = 'closebtn';
+        closeBtn.textContent = '×';
+        closeBtn.onclick = function() {
+            this.parentElement.remove();
+        };
+
+        chip.appendChild(closeBtn);
+        document.getElementById('chipsContainer').appendChild(chip);
+    }
+</script>
+</html>
