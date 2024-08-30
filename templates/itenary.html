@@ -1,24 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Itinerary Results</title>
+    <link rel="stylesheet" href="/static/css/styles-itenary.css">
 </head>
 <body>
-    <h1>Your Itinerary</h1>
-    {% if itinerary %}
-        {% for day in itinerary.days %}
-            <h2>Day {{ day.day }}</h2>
-            {% for activity in day.activities %}
-                <h3>{{ activity.title }}</h3>
-                <p>Description: {{ activity.description }}</p>
-                <p>Location: <a href="{{ activity.location }}">{{ activity.location }}</a></p>
-                <p>Time: {{ activity.start_time }} - {{ activity.end_time }}</p>
-                <p>Link: <a href="{{ activity.link }}">{{ activity.link }}</a></p>
+    <div class="container">
+        <h1>Your Itinerary</h1>
+        {% if itinerary %}
+            {% for day in itinerary.days %}
+                <h2>Day {{ day.day }}</h2>
+                {% for activity in day.activities %}
+                    <h3>{{ activity.title }}</h3>
+                    <p>Description: {{ activity.description }}</p>
+                    <p>Location: <a href="{{ activity.location }}" target="_blank">{{ activity.location }}</a></p>
+                    <p>Time: {{ activity.start_time }} - {{ activity.end_time }}</p>
+                    <p>Link: <a href="{{ activity.link }}" target="_blank">{{ activity.link }}</a></p>
+                {% endfor %}
             {% endfor %}
-        {% endfor %}
-        <a href="{{ url_for('download') }}">Download Itinerary as ICS</a>
-    {% else %}
-        <p>No itinerary generated.</p>
-    {% endif %}
+            <a href="{{ url_for('download') }}" class="download-link">Download Itinerary as ICS</a>
+        {% else %}
+            <p>No itinerary generated.</p>
+        {% endif %}
+    </div>
 </body>
 </html>
