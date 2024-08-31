@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, send_file, jsonify, redirect, url_for, flash
+from flask import Flask, request, render_template, send_file, jsonify, redirect, url_for, flash, session
 from flask_pymongo import PyMongo
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
@@ -16,7 +16,6 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 
-# Load environment variables
 load_dotenv()
 
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
@@ -33,7 +32,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-# User class for Flask-Login
 class User(UserMixin):
     def __init__(self, user_id):
         self.id = user_id
@@ -56,7 +54,7 @@ class RegisterForm(FlaskForm):
     submit = SubmitField("Register")
 
     def validate_username(self, username):
-        if username.data:
+        if username.data:  
             user = mongo.db.users.find_one({"username": username.data})
             if user:
                 raise ValidationError("Username already exists.")
@@ -100,7 +98,6 @@ def login():
             flash("Invalid username or password.", "danger")
     return render_template("login.html", form=form)
 
-# Configure the Google Generative AI API
 PALM_API = os.getenv('PALM_API_KEY')
 palm.configure(api_key=PALM_API)
 models = [m for m in palm.list_models() if 'generateText' in m.supported_generation_methods]
@@ -119,12 +116,10 @@ def index():
         end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
         preferences = request.form.get('hidden_preferences', '')
         
-        days = (end_date - start_date).days
-
+        days = (end_date - start_date).days + 1
         preferences_list = [pref.strip() for pref in preferences.split(',') if pref.strip()]
 
-        prompt = f"You are a travel expert. Give me an itinerary for {city}, for {days} days, assuming each day starts at 10am and ends at 8pm with a buffer of 30 minutes between activities. I like to "
-
+        prompt = f"You are a travel expert. Give me an itinerary for {city}, for {days} days, assuming for each day you have to provide me 2 activities. I like to " 
         if preferences_list:
             prompt += ", ".join(preferences_list) + "."
         else:
@@ -139,7 +134,6 @@ def index():
                 {
                 "title": "Activity 1",
                 "description": "Description of Activity 1",
-                "link": "https://example.com/activity1",
                 "start_time": "10:00 AM",
                 "end_time": "12:00 PM",
                 "location": "https://maps.google.com/?q=location1"
@@ -148,31 +142,21 @@ def index():
             }
         ]
         }
-        Ensure that each day has a 'day' field and a list of 'activities' with 'title', 'description', 'start_time', 'end_time', and 'location' fields. Keep descriptions concise.
-        """        
-    
         
-
-        # Call the Generative AI API
+        Ensure that each day has a 'day' field and a list of 'activities' with 'title', 'description', 'start_time', 'end_time', 'location' fields. Keep descriptions under 10 words. If you do not find any place find places to have food.         """        
         try:
             completion = palm.generate_text(
                 model=model,
                 prompt=prompt,
-                temperature=0,
-                max_output_tokens=6000,
+                temperature=0.4
             )
 
             itinerary = completion.result.strip()
-            # print("Raw JSON Output:", itinerary) 
-
-            print(prompt)
-            print("Preferences", preferences)
             itinerary_json_str = itinerary[7:-3].strip()
             itinerary_json = json.loads(itinerary_json_str)
         except Exception as e:
-            return "An error occurred while generating the itinerary. Please try again."
+            return "OOPS !! You are generating a too long travel plan. Not possible with free version of API 😃"
 
-        # Create calendar
         cal = Calendar()
         for day, activities in enumerate(itinerary_json.get("days", []), start=1):
             for activity in activities.get("activities", []):
@@ -184,7 +168,6 @@ def index():
 
                     start_time_str = activity.get("start_time", "10:00 AM")
                     end_time_str = activity.get("end_time", "10:00 AM")
-                    
                     
                     start_time = parse_time(start_time_str)
                     end_time = parse_time(end_time_str)
@@ -202,27 +185,53 @@ def index():
                 except ValueError as e:
                     print(f"Error creating event: {e}")
         
-        # Generate calendar file
         cal_content = str(cal)
-        cal_file = io.BytesIO(cal_content.encode('utf-8'))
+        session['calendar_content'] = cal_content
+      
         
-        return render_template('itenary.html', itinerary=itinerary_json, calendar_file=cal_file)
+        return render_template('itenary.html', itinerary=itinerary_json)
 
     return render_template('index.html')
 
-@app.route('/download')
+@app.route('/download', methods=['POST'])
 @login_required
 def download():
-    cal_file = request.args.get('file')
-    if not cal_file:
-        return "No file provided.", 400
+   
+    calendar_content = session.get('calendar_content')
+    # print("Calender ", calendar_content)
+    if not calendar_content:
+        return "No file content provided.", 400
 
     return send_file(
-        io.BytesIO(cal_file.encode('utf-8')),
+        io.BytesIO(calendar_content.encode('utf-8')),
         as_attachment=True,
         download_name="Itinerary.ics",
         mimetype="text/calendar"
     )
+
+# @app.route('/test_download', methods=['GET'])
+# @login_required
+# def test_download():
+#     test_ics_content = """BEGIN:VCALENDAR
+# VERSION:2.0
+# PRODID:-//Your Company//NONSGML v1.0//EN
+# BEGIN:VEVENT
+# UID:1234567890@example.com
+# DTSTAMP:20230831T120000Z
+# DTSTART:20230831T130000Z
+# DTEND:20230831T140000Z
+# SUMMARY:Test Event
+# DESCRIPTION:This is a test event
+# LOCATION:https://maps.google.com/?q=test
+# END:VEVENT
+# END:VCALENDAR"""
+    
+    # return send_file(
+    #     io.BytesIO(test_ics_content.encode('utf-8')),
+    #     as_attachment=True,
+    #     download_name="Test_Itinerary.ics",
+    #     mimetype="text/calendar"
+    # )
 
 if __name__ == '__main__':
     app.run(debug=True)
