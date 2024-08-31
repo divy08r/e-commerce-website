@@ -31,11 +31,14 @@
             <input type="text" id="preferenceInput" name="preferences" placeholder="Type and press Enter">
             <div id="chipsContainer"></div>
 
+   
             <input type="hidden" id="hiddenPreferences" name="hidden_preferences">
 
             <button type="submit">Generate Itinerary</button>
         </form>
     </div>
+
+    <div class="loader" id="loader"></div>
 
     <script>
         document.getElementById('preferenceInput').addEventListener('keypress', function(event) {
@@ -73,7 +76,27 @@
         }
 
         document.getElementById('itineraryForm').addEventListener('submit', function() {
-            updateHiddenPreferences();
+            document.getElementById('loader').style.display = 'block';
+        });
+
+        document.getElementById('itineraryForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            document.getElementById('loader').style.display = 'block';
+
+            let formData = new FormData(this);
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('loader').style.display = 'none';
+                document.body.innerHTML = data;
+            })
+            .catch(error => {
+                document.getElementById('loader').style.display = 'none';
+                console.error('Error:', error);
+            });
         });
     </script>
 </body>
