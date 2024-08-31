@@ -7,6 +7,23 @@ body {
       padding: 0;
 }
 
+.chip {
+      display: inline-block;
+      padding: 8px;
+      margin: 5px;
+      border-radius: 16px;
+      background-color: #e0e0e0;
+      font-size: 14px;
+      color: #333;
+}
+
+.chip .closebtn {
+      margin-left: 10px;
+      color: #888;
+      cursor: pointer;
+      font-weight: bold;
+}
+
 header {
       background: url('https://www.riya.travel/images/travel-img02.png') no-repeat center center/cover;
       height: 300px;
@@ -51,7 +68,6 @@ h1 {
 form {
       max-width: 800px;
       margin: 0 auto;
-      /* background: #fff; */
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -102,19 +118,28 @@ button:hover {
       padding: 20px;
 }
 
-.chip {
-    display: inline-block;
-    padding: 8px;
-    margin: 5px;
-    border-radius: 16px;
-    background-color: #e0e0e0;
-    font-size: 14px;
-    color: #333;
+.loader {
+      display: none;
+      border: 8px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 8px solid #3498db;
+      width: 60px;
+      height: 60px;
+      animation: spin 2s linear infinite;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      margin-left: -60px;
+      margin-top: -60px;
+      z-index: 1000;
 }
 
-.chip .closebtn {
-    margin-left: 10px;
-    color: #888;
-    cursor: pointer;
-    font-weight: bold;
+@keyframes spin {
+      0% {
+            transform: rotate(0deg);
+      }
+
+      100% {
+            transform: rotate(360deg);
+      }
 }
